@@ -10,7 +10,6 @@ public class InstantiateGridCells : MonoBehaviour
 	public GameObject waterCellPrefab;
 	public GameObject rockCellPrefab;
 
-
 	void Start()
 	{
 			cellSize = 1;
@@ -31,8 +30,10 @@ public class InstantiateGridCells : MonoBehaviour
 								cell.transform.position = new Vector3(x * cellSize, y * cellSize, 0);
 							}
 							else{//otherwise, instantiate water cell
+
 								GameObject cell = Instantiate(waterCellPrefab, transform);
 								cell.transform.position = new Vector3(x * cellSize, y * cellSize, 0);
+
 								//set water cell colour
 								// ************ - assign based on water cell depth
 								WaterCell waterCell = cell.GetComponent<WaterCell>();
@@ -40,15 +41,10 @@ public class InstantiateGridCells : MonoBehaviour
 									Color randomBlue = Random.ColorHSV(241f / 360f, 260f / 360f, 1f, 1f, 0.6f, 1f);
 									waterCell.SetCellColor(randomBlue);
 								}
-							}
 
+								
+							}
 					}
 			}
 	}
-
-    // Update is called once per frame
-    void Update()
-    {
-
-    }
 }
