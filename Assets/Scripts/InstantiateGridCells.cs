@@ -11,7 +11,7 @@ public class InstantiateGridCells : MonoBehaviour
 	private int _gridSize;
 	private int _cellSize;
 	public int gridSize;
-	public int cellSize;//units
+	public int cellSize;//units - each unit is 100m (arbitrary)
 
 	private float _current_direction;
 	private float _current_strength;
@@ -38,14 +38,6 @@ public class InstantiateGridCells : MonoBehaviour
 			return -1;
 	}
 
-	Vector2 InitVelocity(GameObject cell){
-			Vector2 cellPosition = cell.transform.position;
-			float turbulence = UnityEngine.Random.Range(0.9f, 1.1f); //will multiply velocity by this (+-10%)
-			float velocity_x = current_strength * Mathf.Cos(current_direction * Mathf.PI * 2) * turbulence;
-			float velocity_y = current_strength * Mathf.Sin(current_direction * Mathf.PI * 2) * turbulence;
-			return new Vector2(velocity_x, velocity_y);
-	}
-
 	void InstantiateGrid(){
 			AdjustCamera();
 
@@ -68,10 +60,10 @@ public class InstantiateGridCells : MonoBehaviour
 									float distanceFromCenter = Vector2.Distance(new Vector2(x, y), new Vector2(gridSize/2,gridSize/2));
 									float maxDistance = (float)Math.Sqrt(2 * (Math.Pow((gridSize/2), 2)));
 									float waterDepth = (distanceFromCenter/maxDistance) * maxDepth;
-									
-									Vector2 velocities = InitVelocity(cell);
-									waterCell.SetVelocity(velocities);
+
 									waterCell.SetDepth(waterDepth);
+									waterCell.SetVelocity(current_strength, current_direction, cellSize);
+
 								}
 							}
 					}

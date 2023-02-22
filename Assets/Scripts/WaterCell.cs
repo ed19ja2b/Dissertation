@@ -8,12 +8,14 @@ public class WaterCell : MonoBehaviour
 		private SpriteRenderer spriteRenderer;
 		public Vector3 position;
 
-		const double g = 9.81;
-		const float maxDepth = 30.0f;
+		const float maxDepth = 30.0f;//difficult to find information on average water depth of coastal waters
+		const float drag_coef = 0.03;//mostly arbitrary, hard to find a concrete answer for what's reasonable
+		const int unitToMeters = 100;//arbitrary - each unity unit is 100m
+		const float viscosity = 0.0013;//can change later - find and reference source for this
 
 		public float depth;
-		public double velocity_x;
-		public double velocity_y;
+		public float velocity_x;
+		public float velocity_y;
 		//bernoulli hydraulic head - can use to model how surface roughness affects water flow
 		public double bernoulli_head;
 
@@ -37,17 +39,31 @@ public class WaterCell : MonoBehaviour
 			 // SetCellColor(weight);
 		}
 
-		public void SetVelocity(Vector2 velocity){
-				velocity_x = velocity[0];
-				velocity_y = velocity[1];
-				float weight = 1 - (float)(Math.Sqrt(Math.Pow(velocity_x, 2) + Math.Pow(velocity_y, 2)) / 2.5f);
-				Console.WriteLine("Velocities: {0}, {1}", velocity_x, velocity_y);
+		public void SetVelocity(float current_strength, float current_direction, int cellSize){
+				cellSize = cellSize * unitToMeters;//converting into meters
+
+				float turbulence = UnityEngine.Random.Range(0.95f, 1.05f); //will multiply velocity by this (+-5%)
+				velocity_x = current_strength * Mathf.Cos(current_direction * Mathf.PI * 2) * turbulence;
+				velocity_y = current_strength * Mathf.Sin(current_direction * Mathf.PI * 2) * turbulence;
+
+				velocity_magnitude = Math.Sqrt(Math.Pow(velocity_x, 2) + Math.Pow(velocity_y, 2));
+
+				//drag force
+				float dragForceMagnitude = drag_coef * Math.Pow(velocity_magnitude, 2);
+				Vector2 dragForce = -dragForceMagnitude * velocity_magnitude.normalized;
+
+				Vector2 dragAcceleration = dragForce / (depth * viscosity * cellSize);//drag force divided by the area of the cell and the viscosity of water
+
+				velocity_x += dragAcceleration.x;
+				velocity_y += dragAcceleration.y;
+
+				float weight = 1 - (float)(velocity_magnitude / 2.5f);
 				SetCellColor(weight);
 		}
 
-		public void CalculateBernoulli(){
-				//https://www.sciencedirect.com/science/article/pii/S0022169422010198 - 2.2 (1)
-				//taking bed elevation to be equal to water depth - not concerned about tidal heights, etc.
-				bernoulli_head = (2 * depth) + (Math.Pow(velocity_x,2) + Math.Pow(velocity_y,2)) / (2*g);
-		}
+		// public void CalculateBernoulli(){
+		// 		//https://www.sciencedirect.com/science/article/pii/S0022169422010198 - 2.2 (1)
+		// 		//taking bed elevation to be equal to water depth - not concerned about tidal heights, etc.
+		// 		bernoulli_head = (2 * depth) + (Math.Pow(velocity_x,2) + Math.Pow(velocity_y,2)) / (2*g);
+		// }
 }
