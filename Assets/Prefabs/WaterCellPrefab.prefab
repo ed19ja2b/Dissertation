@@ -13,7 +13,7 @@ GameObject:
   - component: {fileID: 1005601286025421578}
   m_Layer: 0
   m_Name: WaterCellPrefab
-  m_TagString: Untagged
+  m_TagString: WaterCell
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -97,3 +97,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ac971cb7ced9d1946a2be383affa2757, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  position: {x: 0, y: 0, z: 0}
+  bed_elevation: 0
+  depth: 0
+  velocity_x: 0
+  velocity_y: 0
+  bernoulli_head: 0
