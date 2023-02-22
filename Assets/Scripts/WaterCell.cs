@@ -21,12 +21,11 @@ public class WaterCell : MonoBehaviour
 				position = transform.position;
 		}
 
-		public void SetCellColor(){
+		public void SetCellColor(float weight){
 			// randomised
 			// Color color = UnityEngine.Random.ColorHSV(241f / 360f, 260f / 360f, 1f, 1f, 0.6f, 1f);
 			// Calculating colour based on the depth value
-      Color color = Color.Lerp(new Color(0, 0.26f, 0.51f), new Color(0, 0.5f, 1), 1 - (depth/maxDepth));
-			Debug.Log("Color value: " + color.ToString() + " depth/maxdepth: " + (depth/maxDepth).ToString());
+      Color color = Color.Lerp(new Color(0, 0.26f, 0.51f), new Color(0, 0.5f, 1), weight);
 
 			spriteRenderer = GetComponent<SpriteRenderer>();
 			spriteRenderer.color = color;
@@ -34,7 +33,16 @@ public class WaterCell : MonoBehaviour
 
 		public void SetDepth(float _depth){
 			 depth = _depth;
-			 SetCellColor();
+			 // float weight = 1 - (depth/maxDepth);
+			 // SetCellColor(weight);
+		}
+
+		public void SetVelocity(Vector2 velocity){
+				velocity_x = velocity[0];
+				velocity_y = velocity[1];
+				float weight = 1 - (float)(Math.Sqrt(Math.Pow(velocity_x, 2) + Math.Pow(velocity_y, 2)) / 2.5f);
+				Console.WriteLine("Velocities: {0}, {1}", velocity_x, velocity_y);
+				SetCellColor(weight);
 		}
 
 		public void CalculateBernoulli(){

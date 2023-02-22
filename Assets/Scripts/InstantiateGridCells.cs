@@ -13,6 +13,11 @@ public class InstantiateGridCells : MonoBehaviour
 	public int gridSize;
 	public int cellSize;//units
 
+	private float _current_direction;
+	private float _current_strength;
+	public float current_direction;//clockwise between 0 and 1 (1 wraps back around)
+	public float current_strength;//m/s - between 1.0 and 2.5 - https://hypertextbook.com/facts/2002/EugeneStatnikov.shtml
+
 	public GameObject waterCellPrefab;
 	public GameObject rockCellPrefab;
 
@@ -31,6 +36,14 @@ public class InstantiateGridCells : MonoBehaviour
 					return 0;
 			}
 			return -1;
+	}
+
+	Vector2 InitVelocity(GameObject cell){
+			Vector2 cellPosition = cell.transform.position;
+			float turbulence = UnityEngine.Random.Range(0.9f, 1.1f); //will multiply velocity by this (+-10%)
+			float velocity_x = current_strength * Mathf.Cos(current_direction * Mathf.PI * 2) * turbulence;
+			float velocity_y = current_strength * Mathf.Sin(current_direction * Mathf.PI * 2) * turbulence;
+			return new Vector2(velocity_x, velocity_y);
 	}
 
 	void InstantiateGrid(){
@@ -55,6 +68,9 @@ public class InstantiateGridCells : MonoBehaviour
 									float distanceFromCenter = Vector2.Distance(new Vector2(x, y), new Vector2(gridSize/2,gridSize/2));
 									float maxDistance = (float)Math.Sqrt(2 * (Math.Pow((gridSize/2), 2)));
 									float waterDepth = (distanceFromCenter/maxDistance) * maxDepth;
+									
+									Vector2 velocities = InitVelocity(cell);
+									waterCell.SetVelocity(velocities);
 									waterCell.SetDepth(waterDepth);
 								}
 							}
@@ -67,12 +83,14 @@ public class InstantiateGridCells : MonoBehaviour
 			cellSize = 1;
 			_gridSize = gridSize;
 			_cellSize = cellSize;
+			current_direction = 0.25f;
+			current_strength = 1.5f;
 			InstantiateGrid();
 	}
 
 	void Update()
 	{
-			if (gridSize != _gridSize || cellSize != _cellSize){
+			if (gridSize != _gridSize || cellSize != _cellSize || current_direction != _current_direction || current_strength != _current_strength){
 					GameObject[] cells = GameObject.FindGameObjectsWithTag("WaterCell");
 					cells = cells.Concat(GameObject.FindGameObjectsWithTag("RockCell")).ToArray();
 					foreach(GameObject cell in cells)
@@ -80,6 +98,8 @@ public class InstantiateGridCells : MonoBehaviour
 					InstantiateGrid();
 					_gridSize = gridSize;
 					_cellSize = cellSize;
+					_current_direction = current_direction;
+					_current_strength = current_strength;
 			}
 	}
 }
