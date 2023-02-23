@@ -10,13 +10,13 @@ public class InstantiateGridCells : MonoBehaviour
 
 	private int _gridSize;
 	private int _cellSize;
-	public int gridSize;
-	public int cellSize;//units - each unit is 100m (arbitrary)
+	[Range(0,128)]public int gridSize;
+	[Range(1,2)]public int cellSize;//units - each unit is 100m (arbitrary)
 
 	private float _current_direction;
 	private float _current_strength;
-	public float current_direction;//clockwise between 0 and 1 (1 wraps back around)
-	public float current_strength;//m/s - between 1.0 and 2.5 - https://hypertextbook.com/facts/2002/EugeneStatnikov.shtml
+	[Range(0f,1f)]public float current_direction;//clockwise between 0 and 1 (1 wraps back around)
+	[Range(1f,2.5f)]public float current_strength;//m/s - between 1.0 and 2.5 - https://hypertextbook.com/facts/2002/EugeneStatnikov.shtml
 
 	public GameObject waterCellPrefab;
 	public GameObject rockCellPrefab;
@@ -33,7 +33,7 @@ public class InstantiateGridCells : MonoBehaviour
 	int IsRockCell(int x, int y){
 			float distanceFromCenter = Vector2.Distance(new Vector2(x, y), new Vector2(gridSize/2,gridSize/2));
 			if (distanceFromCenter < gridSize/4){//if within a central circle, instantiate as a rock cell
-					return 0;
+					return 0;//is rock
 			}
 			return -1;
 	}
@@ -63,7 +63,6 @@ public class InstantiateGridCells : MonoBehaviour
 
 									waterCell.SetDepth(waterDepth);
 									waterCell.SetVelocity(current_strength, current_direction, cellSize);
-
 								}
 							}
 					}

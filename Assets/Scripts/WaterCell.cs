@@ -9,9 +9,9 @@ public class WaterCell : MonoBehaviour
 		public Vector3 position;
 
 		const float maxDepth = 30.0f;//difficult to find information on average water depth of coastal waters
-		const float drag_coef = 0.03;//mostly arbitrary, hard to find a concrete answer for what's reasonable
+		const float drag_coef = 0.03f;//mostly arbitrary, hard to find a concrete answer for what's reasonable
 		const int unitToMeters = 100;//arbitrary - each unity unit is 100m
-		const float viscosity = 0.0013;//can change later - find and reference source for this
+		const float viscosity = 0.0013f;//can change later - find and reference source for this
 
 		public float depth;
 		public float velocity_x;
@@ -35,8 +35,8 @@ public class WaterCell : MonoBehaviour
 
 		public void SetDepth(float _depth){
 			 depth = _depth;
-			 // float weight = 1 - (depth/maxDepth);
-			 // SetCellColor(weight);
+			 float weight = 1 - (depth/maxDepth);
+			 SetCellColor(weight);
 		}
 
 		public void SetVelocity(float current_strength, float current_direction, int cellSize){
@@ -46,16 +46,16 @@ public class WaterCell : MonoBehaviour
 				velocity_x = current_strength * Mathf.Cos(current_direction * Mathf.PI * 2) * turbulence;
 				velocity_y = current_strength * Mathf.Sin(current_direction * Mathf.PI * 2) * turbulence;
 
-				velocity_magnitude = Math.Sqrt(Math.Pow(velocity_x, 2) + Math.Pow(velocity_y, 2));
+				float velocity_magnitude = (float)Math.Sqrt(Math.Pow(velocity_x, 2) + Math.Pow(velocity_y, 2));
 
 				//drag force
-				float dragForceMagnitude = drag_coef * Math.Pow(velocity_magnitude, 2);
-				Vector2 dragForce = -dragForceMagnitude * velocity_magnitude.normalized;
-
-				Vector2 dragAcceleration = dragForce / (depth * viscosity * cellSize);//drag force divided by the area of the cell and the viscosity of water
-
-				velocity_x += dragAcceleration.x;
-				velocity_y += dragAcceleration.y;
+				// float dragForceMagnitude = drag_coef * (float)Math.Pow(velocity_magnitude, 2);
+				// float dragForce = -dragForceMagnitude * velocity_magnitude;
+				//
+				// float dragAcceleration = dragForce / (depth * viscosity * cellSize);//drag force divided by the area of the cell and the viscosity of water
+				//
+				// velocity_x += dragAcceleration;
+				// velocity_y += dragAcceleration;
 
 				float weight = 1 - (float)(velocity_magnitude / 2.5f);
 				SetCellColor(weight);
