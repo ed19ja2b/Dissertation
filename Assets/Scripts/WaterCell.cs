@@ -8,14 +8,11 @@ public class WaterCell : MonoBehaviour
 		private SpriteRenderer spriteRenderer;
 		public Vector3 position;
 
-		const double g = 9.81;
-		const float maxDepth = 30.0f;
+		// const float maxDepth = 30.0f;
 
 		public float depth;
 		public double velocity_x;
 		public double velocity_y;
-		//bernoulli hydraulic head - can use to model how surface roughness affects water flow
-		public double bernoulli_head;
 
 		void Start(){
 				position = transform.position;
@@ -43,11 +40,5 @@ public class WaterCell : MonoBehaviour
 				float weight = 1 - (float)(Math.Sqrt(Math.Pow(velocity_x, 2) + Math.Pow(velocity_y, 2)) / 2.5f);
 				Console.WriteLine("Velocities: {0}, {1}", velocity_x, velocity_y);
 				SetCellColor(weight);
-		}
-
-		public void CalculateBernoulli(){
-				//https://www.sciencedirect.com/science/article/pii/S0022169422010198 - 2.2 (1)
-				//taking bed elevation to be equal to water depth - not concerned about tidal heights, etc.
-				bernoulli_head = (2 * depth) + (Math.Pow(velocity_x,2) + Math.Pow(velocity_y,2)) / (2*g);
 		}
 }

@@ -31,9 +31,12 @@ public class InstantiateGridCells : MonoBehaviour
 	}
 
 	int IsRockCell(int x, int y){
-			float distanceFromCenter = Vector2.Distance(new Vector2(x, y), new Vector2(gridSize/2,gridSize/2));
-			if (distanceFromCenter < gridSize/4){//if within a central circle, instantiate as a rock cell
-					return 0;
+			// float distanceFromCenter = Vector2.Distance(new Vector2(x, y), new Vector2(gridSize/2,gridSize/2));
+			// if (distanceFromCenter < gridSize/4){//if within a central circle, instantiate as a rock cell
+			// 		return 0;
+			// }
+			if (x >= gridSize / 2){//right half 'rock'
+				return 0;
 			}
 			return -1;
 	}
@@ -68,7 +71,7 @@ public class InstantiateGridCells : MonoBehaviour
 									float distanceFromCenter = Vector2.Distance(new Vector2(x, y), new Vector2(gridSize/2,gridSize/2));
 									float maxDistance = (float)Math.Sqrt(2 * (Math.Pow((gridSize/2), 2)));
 									float waterDepth = (distanceFromCenter/maxDistance) * maxDepth;
-									
+
 									Vector2 velocities = InitVelocity(cell);
 									waterCell.SetVelocity(velocities);
 									waterCell.SetDepth(waterDepth);
