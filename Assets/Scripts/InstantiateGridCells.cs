@@ -20,6 +20,7 @@ public class InstantiateGridCells : MonoBehaviour
 
 	public GameObject waterCellPrefab;
 	public GameObject rockCellPrefab;
+	public GameObject[,] cells;
 
 	void AdjustCamera(){
 		//adjusting camera to view entire grid
@@ -51,7 +52,7 @@ public class InstantiateGridCells : MonoBehaviour
 
 	void InstantiateGrid(){
 			AdjustCamera();
-
+			cells = new GameObject[gridSize, gridSize];
 			//instantiating cells
 			for (int x = 0; x < gridSize; x++){
 					for (int y = 0; y < gridSize; y++){
@@ -59,6 +60,7 @@ public class InstantiateGridCells : MonoBehaviour
 							if (IsRockCell(x,y) == 0){//if within a central circle, instantiate as a rock cell
 								GameObject cell = Instantiate(rockCellPrefab, transform);
 								cell.transform.position = new Vector3(x * cellSize, y * cellSize, 0);
+								cells[x,y] = cell;
 							}
 							else{//otherwise, instantiate water cell
 								GameObject cell = Instantiate(waterCellPrefab, transform);
@@ -75,6 +77,7 @@ public class InstantiateGridCells : MonoBehaviour
 									Vector2 velocities = InitVelocity(cell);
 									waterCell.SetVelocity(velocities);
 									waterCell.SetDepth(waterDepth);
+									cells[x,y] = cell;
 								}
 							}
 					}
