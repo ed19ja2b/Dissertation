@@ -85,7 +85,7 @@ public class InstantiateGridCells : MonoBehaviour
 	}
 
 	void Start(){
-			gridSize = 20;
+			gridSize = 64;// width
 			cellSize = 1;
 			_gridSize = gridSize;
 			_cellSize = cellSize;
@@ -96,7 +96,15 @@ public class InstantiateGridCells : MonoBehaviour
 
 	void Update()
 	{
+			bool updateGrid = false;
 			if (gridSize != _gridSize || cellSize != _cellSize || current_direction != _current_direction || current_strength != _current_strength){
+				updateGrid = true;
+			}
+
+			cells = GetComponent<KawasakiDiffusion>().RunKawasakiDiffusion(gridSize, cells);
+			//Debug.Log("Kawasaki");
+
+			if (updateGrid == true){
 					GameObject[] cells = GameObject.FindGameObjectsWithTag("WaterCell");
 					cells = cells.Concat(GameObject.FindGameObjectsWithTag("RockCell")).ToArray();
 					foreach(GameObject cell in cells)
@@ -107,5 +115,6 @@ public class InstantiateGridCells : MonoBehaviour
 					_current_direction = current_direction;
 					_current_strength = current_strength;
 			}
+
 	}
 }
