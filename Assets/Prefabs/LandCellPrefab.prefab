@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 8413392310578071530}
   - component: {fileID: 61913920583205040}
   m_Layer: 0
-  m_Name: RockCellPrefab
+  m_Name: LandCellPrefab
   m_TagString: RockCell
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
