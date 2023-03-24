@@ -238,11 +238,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   gridSize: 0
-  cellSize: 0
-  current_direction: 0
-  current_strength: 0
   waterCellPrefab: {fileID: 3492976370127973791, guid: ad51278f92a81984c91a2b62396eb09b, type: 3}
-  rockCellPrefab: {fileID: 3492976370127973791, guid: b33844c2fb321044a901f19484f2ad6e, type: 3}
+  landCellPrefab: {fileID: 3492976370127973791, guid: b33844c2fb321044a901f19484f2ad6e, type: 3}
 --- !u!4 &1646054249
 Transform:
   m_ObjectHideFlags: 0
