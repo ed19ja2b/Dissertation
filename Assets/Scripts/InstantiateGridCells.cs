@@ -22,41 +22,42 @@ public class InstantiateGridCells : MonoBehaviour
 	}
 
 	//may change rule later
-	bool IsRockCell(Vector2 pos){
+	//if position is in RHS of grid
+	bool IsRockPos(Vector2 pos){
 		if (pos.x >= gridSize / 2){
 			return true;
 		}
 		return false;
 	}
 
-	void InstantiateLandCell(Vector2 pos){
+	GameObject InstantiateLandCell(Vector2 pos){
 		GameObject cell = Instantiate(landCellPrefab, transform);
 		cell.transform.position = new Vector3(pos.x, pos.y, 0);
-		cells[(int)pos.x, (int)pos.y] = cell;
+		return cell;
 	}
 
-	void InstantiateWaterCell(Vector2 pos){
+	GameObject InstantiateWaterCell(Vector2 pos){
 		GameObject cell = Instantiate(waterCellPrefab, transform);
 		cell.transform.position = new Vector3(pos.x, pos.y, 0);
 		WaterCell waterCell = cell.GetComponent<WaterCell>();
 		waterCell.SetCellColor(0.75f);
-		cells[(int)pos.x, (int)pos.y] = cell;
+		return cell;
 	}
 
-	void InstantiateGrid(){
+	GameObject[,] InstantiateGrid(){
 			AdjustCamera();
-			cells = new GameObject[gridSize, gridSize];
+			GameObject[,] _cells = new GameObject[gridSize, gridSize];
 			for (int x = 0; x < gridSize; x++){
 				for (int y = 0; y < gridSize; y++){
 					Vector2 vector_pos = new Vector2(x, y);
-					//if position is in RHS of grid
-					if (IsRockCell(vector_pos)){
-						InstantiateLandCell(vector_pos);
+					if (IsRockPos(vector_pos)){
+						_cells[x,y] = InstantiateLandCell(vector_pos);
 					} else{
-						InstantiateWaterCell(vector_pos);
+						_cells[x,y] = InstantiateWaterCell(vector_pos);
 					}
 				}
 			}
+			return _cells;
 	}
 
 	void DestroyCells(){
@@ -69,10 +70,8 @@ public class InstantiateGridCells : MonoBehaviour
 
 	void Start(){
 		gridSize = 64;
-		InstantiateGrid();
-		GameObject[,] newCells = GetComponent<KawasakiDiffusion>().RunKawasakiDiffusion(gridSize, cells);
-		DestroyCells();
-		cells = newCells;
+		cells = InstantiateGrid();
+		cells = GetComponent<KawasakiDiffusion>().RunKawasakiDiffusion(gridSize, cells);
 	}
 
 	void Update()

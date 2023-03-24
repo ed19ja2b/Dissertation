@@ -9,6 +9,9 @@ public class KawasakiDiffusion : MonoBehaviour
 		public GameObject[,] cells;
 		private int gridSize;
 		public float temperature = 2.0f;//used in metropolis probability
+		// Boltzmann Constant as defined here - https://www.nist.gov/si-redefinition/meet-constants
+		// taken from https://www.codeproject.com/Articles/11647/Special-Function-s-for-C
+		public const double BOLTZMAN = 1.3807e-16;
 		public int num_runs = 5;
 
 		// adding these positions to a coordinate as a vector will give position of north, east, south and west neighbours respectively
@@ -53,7 +56,7 @@ public class KawasakiDiffusion : MonoBehaviour
 				//cell's position
 				Vector2 pos = new Vector2(cell_i.transform.position.x, cell_i.transform.position.y);
 				float energy = 0f;
-				float J_water_water = 1f;//water-water interactions give positive V coupling constant as in Hawick's Kawasaki Model
+				float J_water_water = 2f;//water-water interactions give positive V coupling constant as in Hawick's Kawasaki Model
 				float J_water_land = -1f;//water-land interactions give negative V coupling constant
 
 				//determine first neighbour's position (north)
@@ -91,6 +94,7 @@ public class KawasakiDiffusion : MonoBehaviour
 			Vector2 cell2_pos = new Vector2(cell2.transform.position.x, cell2.transform.position.y);
 			cells[(int)cell1_pos.x, (int)cell1_pos.y] = cell2;
 			cells[(int)cell2_pos.x, (int)cell2_pos.y] = tempCell;
+			//Debug.Log("Swap made at pos: " + (int)cell1_pos.x + ", " + (int)cell1_pos.y);
 		}
 
 		//calculate energy change if we swap the cell out for its neighbouring cell, and make any changes
@@ -108,23 +112,17 @@ public class KawasakiDiffusion : MonoBehaviour
 			float new_energy = CalculateHamiltonian(cells[(int)cell_pos.x, (int)cell_pos.y]) + CalculateHamiltonian(cells[(int)neighbour_pos.x, (int)neighbour_pos.y]);
 			float energy_change = new_energy - initial_energy;
 			//Debug.Log("Energy change: " + energy_change);
-			if (energy_change <= 0){// 'if energy falls, accept change and do exchange' - Hawick's Algorithm 1
-					//Debug.Log("Energy change: " + energy_change + ", swap made");
-					return energy_change;
-			}
-
-			// otherwise, compute Metropolis probability, accept change if less than random probability
 			float r = (float)random.NextDouble();
-			//not using Boltzmann constant as mentioned in Hawick's paper - temperature serves as control variable instead
-			float metropolis_probability = Mathf.Exp(-energy_change / temperature);
-
-			if (r < metropolis_probability){
-				//Debug.Log("Energy change: " + energy_change + ", swap made");
-				return energy_change;
-			} else{
-				// otherwise, we reject the change and swap cells back to original order
-				SwapCells(cell, neighbourCell);
-				//Debug.Log("Energy change: " + energy_change + ", no swap");
+			if (energy_change >= 0){// 'if energy doesn't fall - Hawick's Algorithm 1
+					float metropolis_probability = (Mathf.Exp(-energy_change / (float)(BOLTZMAN * temperature)));
+					Debug.Log("metropolis_probability: " + metropolis_probability + "energy_change: " + energy_change);
+					if (r < metropolis_probability || metropolis_probability > 1){
+						return energy_change;
+					} else{// otherwise, we reject the change and swap cells back to original order
+						SwapCells(cell, neighbourCell);
+						return 0;
+					}
+			} else {//otherwise if energy falls, accept change - more stable system
 				return energy_change;
 			}
 		}
