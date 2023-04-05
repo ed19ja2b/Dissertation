@@ -36,9 +36,19 @@ public class InvasionPercolation : MonoBehaviour
 				random = new System.Random();
 				for (int x = 0; x < gridSize; x++){
 					for (int y = 0; y < gridSize; y++){
+							random = new System.Random();
 							float u = (float)random.NextDouble();//0 <= u < 1
 							//x + 1 to avoid dividing by zero
 							float Px_y = (u * p) + ((1 - p) * ((gridSize - x + 1)/(x + 1)));
+							//***************** testing purposes ********************
+							Debug.Log("Px_y: " + Px_y);
+							//visualising random site field
+							GameObject cell = cells[x, y];
+							if (IsDefender(cell)){
+								Color color = Color.Lerp(new Color(0.25f, 0.25f, 0.25f), new Color(0.4f, 0.4f, 0.4f), Px_y);
+								cell.GetComponent<SpriteRenderer>().color = color;
+							}
+							//***************** end of testing **********************
 							randomField[x, y] = Px_y;
 					}
 				}
@@ -55,7 +65,7 @@ public class InvasionPercolation : MonoBehaviour
 					numGrowthSites -= 1;
 
 					GameObject _cell = Instantiate(waterCellPrefab, transform);
-					_cell.GetComponent<WaterCell>().SetCellColor(0.75f);
+					_cell.GetComponent<SpriteRenderer>().color = Color.cyan;
 					_cell.transform.position = new Vector3(x, y, 0);
 					cells[x, y] = _cell;
 					if (x == gridSize - 1){
@@ -90,6 +100,8 @@ public class InvasionPercolation : MonoBehaviour
 					float growthProbability = randomField[x, y];
 					//if it isn't already in the list
 					if(!rankedGrowthSites.ContainsKey(growthProbability)){
+							//colour the growth site green
+							site.GetComponent<SpriteRenderer>().color = Color.green;
 							rankedGrowthSites.Add(growthProbability, site);
 							numGrowthSites += 1;
 					}
@@ -147,7 +159,7 @@ public class InvasionPercolation : MonoBehaviour
 				cells = _cells;
 
 				random = new System.Random();
-				p = -1f;
+				p = -.8f;
 
 				InitGrowthProbabilities();
 				ConstructRankedGrowthSites();

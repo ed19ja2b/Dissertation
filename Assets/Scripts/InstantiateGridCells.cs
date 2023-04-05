@@ -39,8 +39,7 @@ public class InstantiateGridCells : MonoBehaviour
 	GameObject InstantiateWaterCell(Vector2 pos){
 		GameObject cell = Instantiate(waterCellPrefab, transform);
 		cell.transform.position = new Vector3(pos.x, pos.y, 0);
-		WaterCell waterCell = cell.GetComponent<WaterCell>();
-		waterCell.SetCellColor(0.75f);
+		cell.GetComponent<SpriteRenderer>().color = Color.cyan;
 		return cell;
 	}
 
