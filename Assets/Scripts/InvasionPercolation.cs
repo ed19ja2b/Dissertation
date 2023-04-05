@@ -35,21 +35,23 @@ public class InvasionPercolation : MonoBehaviour
     void InitGrowthProbabilities(){
 				random = new System.Random();
 				for (int x = 0; x < gridSize; x++){
+					//x + 1 to avoid dividing by zero
+					float Px_y = ((1 - p) * ((gridSize - x + 1)/(x + 1)));
 					for (int y = 0; y < gridSize; y++){
-							random = new System.Random();
 							float u = (float)random.NextDouble();//0 <= u < 1
-							//x + 1 to avoid dividing by zero
-							float Px_y = (u * p) + ((1 - p) * ((gridSize - x + 1)/(x + 1)));
+							//moving bulk of this calculation outside of the y loop where it isn't dependent on x should improve performance
+							Px_y += (u * p);
 							//***************** testing purposes ********************
-							Debug.Log("Px_y: " + Px_y);
-							//visualising random site field
-							GameObject cell = cells[x, y];
-							if (IsDefender(cell)){
-								Color color = Color.Lerp(new Color(0.25f, 0.25f, 0.25f), new Color(0.4f, 0.4f, 0.4f), Px_y);
-								cell.GetComponent<SpriteRenderer>().color = color;
-							}
+							Debug.Log("p: " + p + " Px_y: " + Px_y);
+							// //visualising random site field
+							// GameObject cell = cells[x, y];
+							// if (IsDefender(cell)){
+							// 	Color color = Color.Lerp(new Color(0.25f, 0.25f, 0.25f), new Color(0.4f, 0.4f, 0.4f), Px_y);
+							// 	cell.GetComponent<SpriteRenderer>().color = color;
+							// }
 							//***************** end of testing **********************
 							randomField[x, y] = Px_y;
+							Px_y = 0;
 					}
 				}
 		}
@@ -93,6 +95,7 @@ public class InvasionPercolation : MonoBehaviour
 		//should only take land cells as growth sites
 		//https://learn.microsoft.com/en-us/dotnet/api/system.collections.sortedlist?view=net-7.0
 		void UpdateRankedGrowthSites(GameObject[] growthSites){
+			//Debug.Log("UpdateRankedGrowthSites()");
 			foreach(GameObject site in growthSites){
 				if (site != null){
 					int x = (int)site.transform.position.x;
@@ -110,6 +113,7 @@ public class InvasionPercolation : MonoBehaviour
 		}
 
 		void ConstructRankedGrowthSites(){
+				//Debug.Log("ConstructRankedGrowthSites()");
 				numGrowthSites = 0;
 				for (int x = 0; x < gridSize; x++){
 					for (int y = 0; y < gridSize; y++){
@@ -128,6 +132,7 @@ public class InvasionPercolation : MonoBehaviour
 					return null;
 				}
 				GameObject growthSite = rankedGrowthSites.Values[numGrowthSites - 1];
+				Debug.Log("Largest growth site at: " + growthSite.transform.position + " Px_y: " + rankedGrowthSites.Keys[numGrowthSites - 1]);
 				return growthSite;
 		}
 
@@ -159,7 +164,7 @@ public class InvasionPercolation : MonoBehaviour
 				cells = _cells;
 
 				random = new System.Random();
-				p = -.8f;
+				p = .05f;
 
 				InitGrowthProbabilities();
 				ConstructRankedGrowthSites();
@@ -167,12 +172,13 @@ public class InvasionPercolation : MonoBehaviour
 				bool reachedRHS = false;
 				while(reachedRHS == false){
 						GameObject cell = FindLargestGrowthSite();
-						reachedRHS = ErodeCell(cell);
 						int x = (int)cell.transform.position.x;
 						int y = (int)cell.transform.position.y;
+						reachedRHS = ErodeCell(cell);
 						GameObject[] neighbours = GetNeighboursAtPos(x, y);
 						GameObject[] growthSites = IdentifyGrowthSites(neighbours);
 						UpdateRankedGrowthSites(growthSites);
+
 				}
 				Debug.Log("Exited while loop");
 				return cells;
