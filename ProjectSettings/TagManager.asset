@@ -5,7 +5,7 @@ TagManager:
   serializedVersion: 2
   tags:
   - WaterCell
-  - RockCell
+  - LandCell
   layers:
   - Default
   - TransparentFX
