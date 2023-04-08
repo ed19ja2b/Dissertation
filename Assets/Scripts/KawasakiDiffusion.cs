@@ -15,8 +15,6 @@ public class KawasakiDiffusion : MonoBehaviour
 		public const double BOLTZMAN = 1.3807e-16;
 		private const float temperature = 32.0f;//used in metropolis probability
 
-		int num_runs = 2500;
-
 		int [,] neighbour_positions = {{0, 1}, {1, 0}, {0, -1}, {-1, 0}};
 
 		bool IsValidPosition(int x, int y){
@@ -88,33 +86,42 @@ public class KawasakiDiffusion : MonoBehaviour
 		//limiting to nearest neighbours
 		private float CalculateHamiltonian(GameObject cell){
 				float energy = 0f;
+				float J_water_water = -1f;
+				float J_water_land = 1f;
+
 				int x = (int)cell.transform.position.x;
 				int y = (int)cell.transform.position.y;
 				GameObject[] neighbours = GetNeighboursAtPos(x, y);
-
+				int c_i = 0;
+				if(IsWater(cell))c_i = 1;
 				foreach(GameObject _cell in neighbours){
 						if (_cell != null){
-								//if two water sites, repulsive energy
-								if (IsWater(cell) && IsWater(_cell)){
-										energy += -1f;
-								//if different sites, attractive energy
-								} else if ((!IsWater(cell) && IsWater(_cell)) || (!IsWater(_cell) && IsWater(cell))){
-										energy += 1f;
-								}//otherwise, land-land interactions have no energy change
+								int c_j = 0;
+								if(IsWater(_cell))c_j = 1;
+								if(c_i != 0 || c_j != 0){
+										//if water and land
+										if(c_i == 1 && c_j == 1){
+												energy += J_water_water;
+										}
+										else {
+												energy += J_water_land;
+										}
+								}
 						}
 				}
+
 				return energy;
 		}
 
 		private float ComputeMetropolisProbability(float energy_change){
-				float p = 0f;
+				float p = 1.0f/temperature;
 				if (energy_change <= 0){
-						p = 1.0f/temperature;
 						//Debug.Log("metropolis (1/t): " + p + " given energy_change of: " + energy_change);
 						return p;
 				}
-				p = 1.0f/temperature * (float)(Math.Exp((double)(-energy_change/(temperature * BOLTZMAN))));
-				Debug.Log("metropolis: " + p + " given energy_change of: " + energy_change);
+				// p *= (float)(Math.Exp(-1 * (energy_change / (BOLTZMAN * temperature))));
+				p = (float)random.NextDouble();
+				//Debug.Log("metropolis: " + energy_change / (BOLTZMAN * temperature) + " given energy_change of: " + energy_change);
 				return p;
 		}
 
@@ -134,10 +141,11 @@ public class KawasakiDiffusion : MonoBehaviour
 				}
 		}
 
-		public GameObject[,] RunKawasakiDiffusion(int _gridSize, GameObject[,] _cells){
+		public GameObject[,] RunKawasakiDiffusion(int _gridSize, GameObject[,] _cells, int _num_runs){
 				random = new System.Random();
 				gridSize = _gridSize;
 				cells = _cells;
+				int num_runs = _num_runs;
 
 				for (int i = 0; i < num_runs; i++){
 					foreach(var pos in Enumerable.Range(0, gridSize).OrderBy(x => random.Next()).Zip(Enumerable.Range(0, gridSize).OrderBy(x => random.Next()), (x, y) => new { x, y})){

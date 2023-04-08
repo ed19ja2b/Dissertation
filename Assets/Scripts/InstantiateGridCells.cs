@@ -40,7 +40,7 @@ public class InstantiateGridCells : MonoBehaviour
 	GameObject InstantiateWaterCell(Vector2 pos){
 		GameObject cell = Instantiate(waterCellPrefab, transform);
 		cell.transform.position = new Vector3(pos.x, pos.y, 0);
-		cell.GetComponent<SpriteRenderer>().color = Color.cyan;
+		cell.GetComponent<SpriteRenderer>().color = new Color(0, 255, 255);
 		return cell;
 	}
 
@@ -71,8 +71,8 @@ public class InstantiateGridCells : MonoBehaviour
 	void Start(){
 		gridSize = 256;
 		cells = InstantiateGrid();
-		cells = GetComponent<InvasionPercolation>().RunInvasionPercolation(gridSize, cells);
-		cells = GetComponent<KawasakiDiffusion>().RunKawasakiDiffusion(gridSize, cells);
+		cells = GetComponent<InvasionPercolation>().RunInvasionPercolation(gridSize, cells, .40f);
+		//cells = GetComponent<KawasakiDiffusion>().RunKawasakiDiffusion(gridSize, cells, 10);
 
 	}
 
