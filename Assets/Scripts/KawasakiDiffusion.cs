@@ -13,7 +13,7 @@ public class KawasakiDiffusion : MonoBehaviour
 		// Boltzmann Constant as defined here - https://www.nist.gov/si-redefinition/meet-constants
 		// taken from https://www.codeproject.com/Articles/11647/Special-Function-s-for-C
 		public const double BOLTZMAN = 1.3807e-16;
-		private const float temperature = 32.0f;//used in metropolis probability
+		private const float temperature = 25.0f;//used in metropolis probability
 
 		int [,] neighbour_positions = {{0, 1}, {1, 0}, {0, -1}, {-1, 0}};
 
@@ -119,9 +119,9 @@ public class KawasakiDiffusion : MonoBehaviour
 						//Debug.Log("metropolis (1/t): " + p + " given energy_change of: " + energy_change);
 						return p;
 				}
-				// p *= (float)(Math.Exp(-1 * (energy_change / (BOLTZMAN * temperature))));
-				p = (float)random.NextDouble();
-				//Debug.Log("metropolis: " + energy_change / (BOLTZMAN * temperature) + " given energy_change of: " + energy_change);
+				p *= (float)(Math.Exp(-1 * (energy_change / (temperature))));
+				//p = (float)random.NextDouble();
+				Debug.Log("metropolis: " + p + " given energy_change of: " + energy_change);
 				return p;
 		}
 
@@ -144,16 +144,21 @@ public class KawasakiDiffusion : MonoBehaviour
 		public GameObject[,] RunKawasakiDiffusion(int _gridSize, GameObject[,] _cells, int _num_runs){
 				random = new System.Random();
 				gridSize = _gridSize;
-				cells = _cells;
+				GameObject[,] initcells = _cells;
+				Vector2[,] avgPositions = new Vector2[_gridSize, _gridSize];
 				int num_runs = _num_runs;
 
-				for (int i = 0; i < num_runs; i++){
+
+				for(int i = 0; i < num_runs; i++){
+				 	cells = initcells;
 					foreach(var pos in Enumerable.Range(0, gridSize).OrderBy(x => random.Next()).Zip(Enumerable.Range(0, gridSize).OrderBy(x => random.Next()), (x, y) => new { x, y})){
 							GameObject cell = cells[(int)pos.x, (int)pos.y];
 							GameObject neighbourCell = ChooseRandomNeighbour(cell);
 							DetermineEnergyChange(cell, neighbourCell);
 					}
 				}
+
+
 
 				return cells;
 		}

@@ -48,8 +48,13 @@ public class InvasionPercolation : MonoBehaviour
 							float u = (float)random.NextDouble();//0 <= u < 1
 							//moved bulk of this calculation outside of the y loop where it isn't dependent on x should improve performance
 							float Px_y = P + (u * p);
-							//Debug.Log("Px_y: " + Px_y + " at pos: " + x + ", " + y);
-
+							Debug.Log("Px_y: " + Px_y + " at pos: " + x + ", " + y);
+							// used for figure 2.2 visualizing pore size incursion probabilities
+							// GameObject cell = cells[x,y];
+							// Color start_colour = new Color(113/255f,73/255f,198/255f);
+							// Color end_colour = new Color(252/255f,41/255f,71/255f);
+							// Color growth_colour = Color.Lerp(start_colour, end_colour, Px_y);
+							// cell.GetComponent<SpriteRenderer>().color = growth_colour;
 							randomField[x, y] = Px_y;
 					}
 				}
@@ -179,7 +184,7 @@ public class InvasionPercolation : MonoBehaviour
 						UpdateRankedGrowthSites(growthSites);
 
 				}
-				//Debug.Log("Exited while loop");
+				Debug.Log("Exited while loop");
 				return cells;
 		}
 }

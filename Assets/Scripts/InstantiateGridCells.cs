@@ -71,8 +71,8 @@ public class InstantiateGridCells : MonoBehaviour
 	void Start(){
 		gridSize = 256;
 		cells = InstantiateGrid();
-		cells = GetComponent<InvasionPercolation>().RunInvasionPercolation(gridSize, cells, .40f);
-		//cells = GetComponent<KawasakiDiffusion>().RunKawasakiDiffusion(gridSize, cells, 10);
+		cells = GetComponent<InvasionPercolation>().RunInvasionPercolation(gridSize, cells, .25f);
+		//cells = GetComponent<KawasakiDiffusion>().RunKawasakiDiffusion(gridSize, cells, 100);
 
 	}
 
