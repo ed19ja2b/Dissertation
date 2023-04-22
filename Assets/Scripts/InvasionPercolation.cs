@@ -48,7 +48,7 @@ public class InvasionPercolation : MonoBehaviour
 							float u = (float)random.NextDouble();//0 <= u < 1
 							//moved bulk of this calculation outside of the y loop where it isn't dependent on x should improve performance
 							float Px_y = P + (u * p);
-							Debug.Log("Px_y: " + Px_y + " at pos: " + x + ", " + y);
+							//Debug.Log("Px_y: " + Px_y + " at pos: " + x + ", " + y);
 							// used for figure 2.2 visualizing pore size incursion probabilities
 							// GameObject cell = cells[x,y];
 							// Color start_colour = new Color(113/255f,73/255f,198/255f);
@@ -67,6 +67,7 @@ public class InvasionPercolation : MonoBehaviour
 					int y = (int)cell.transform.position.y;
 					GameObject.Destroy(cell);
 					float key = randomField[x, y];
+
 					rankedGrowthSites.Remove(key);
 					numGrowthSites -= 1;
 
@@ -174,17 +175,19 @@ public class InvasionPercolation : MonoBehaviour
 				ConstructRankedGrowthSites();
 
 				bool reachedRHS = false;
+				int counter = 0;
 				while(reachedRHS == false){
 						GameObject cell = FindLargestGrowthSite();
-						int x = (int)cell.transform.position.x;
-						int y = (int)cell.transform.position.y;
-						reachedRHS = ErodeCell(cell);
-						GameObject[] neighbours = GetNeighboursAtPos(x, y);
-						GameObject[] growthSites = IdentifyGrowthSites(neighbours);
-						UpdateRankedGrowthSites(growthSites);
-
+						if(cell!=null){
+							int x = (int)cell.transform.position.x;
+							int y = (int)cell.transform.position.y;
+							reachedRHS = ErodeCell(cell);
+							GameObject[] neighbours = GetNeighboursAtPos(x, y);
+							GameObject[] growthSites = IdentifyGrowthSites(neighbours);
+							UpdateRankedGrowthSites(growthSites);
+						}
+						counter++;
 				}
-				Debug.Log("Exited while loop");
 				return cells;
 		}
 }
