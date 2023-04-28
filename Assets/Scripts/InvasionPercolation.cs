@@ -163,7 +163,7 @@ public class InvasionPercolation : MonoBehaviour
 				return growthSites;
 		}
 
-		public GameObject[,] RunInvasionPercolation(int _gridSize, GameObject[,] _cells, float _p){
+		public (int, GameObject[,]) RunInvasionPercolation(int _gridSize, GameObject[,] _cells, float _p){
 				gridSize = _gridSize;
 				randomField = new float[gridSize, gridSize];
 				cells = _cells;
@@ -188,6 +188,6 @@ public class InvasionPercolation : MonoBehaviour
 						}
 						counter++;
 				}
-				return cells;
+				return (counter, cells);
 		}
 }

@@ -33,7 +33,7 @@ public class InstantiateGridCells : MonoBehaviour
 	GameObject InstantiateLandCell(Vector2 pos){
 		GameObject cell = Instantiate(landCellPrefab, transform);
 		cell.transform.position = new Vector3(pos.x, pos.y, 0);
-		//cell.GetComponent<SpriteRenderer>().color = new Color(.30f,.10f,.10f);
+		// cell.GetComponent<SpriteRenderer>().color = Color.blue;
 		return cell;
 	}
 
@@ -71,9 +71,18 @@ public class InstantiateGridCells : MonoBehaviour
 	void Start(){
 		gridSize = 256;
 		cells = InstantiateGrid();
-		cells = GetComponent<InvasionPercolation>().RunInvasionPercolation(gridSize, cells, -.15f);
-		cells = GetComponent<KawasakiDiffusion>().RunKawasakiDiffusion(gridSize, cells, 2000);
-
+		int num_runs = 100;
+		float p = .6f;
+		int num_iterations;
+		(num_iterations, cells) = GetComponent<InvasionPercolation>().RunInvasionPercolation(gridSize, cells, p);
+		Debug.Log(num_iterations);
+		num_runs = (int)(Math.Round(Math.Sqrt(num_iterations) / 2 * (p)));
+		if (p < 0){
+				num_runs = Math.Abs((int)(num_iterations * (p)));
+		}
+		Debug.Log("num runs: " + num_runs);
+		cells = GetComponent<KawasakiDiffusion>().RunKawasakiDiffusion(gridSize, cells, num_runs);
+		Debug.Log("Kawasaki finished");
 	}
 
 	void Update()
