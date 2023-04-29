@@ -74,7 +74,7 @@ public class KawasakiDiffusion : MonoBehaviour
 					if (IsValidPosition(n_x, n_y) == true)
 					{
 							neighbours[i] = cells[n_x, n_y];
-					}	else// otherwise, there is no neighbour here and so we set this index to null
+					}	else// otherwise, there is no neighbour here and so we set this to null
 					{
 							neighbours[i] = null;
 					}
@@ -148,7 +148,7 @@ public class KawasakiDiffusion : MonoBehaviour
 				double scaling_factor = 1e+23;// normalise denominator to not get incredibly large exponents when dividing by the boltzmann constant
 				// calculate exponent to be raised to e - based on Hawick's equation 9 - https://www.researchgate.net/publication/287274420_Modelling_Flood_Incursion_and_Coastal_Erosion_using_Cellular_Automata_Simulations
 		    logFactor = -energy_change / (temperature * BOLTZMANN * scaling_factor);
-				// scale the probability by the taue
+				// scale the probability by the tau
 		    double p = tau * Math.Exp(logFactor);
 		    return (float)p;
 		}
@@ -195,8 +195,9 @@ public class KawasakiDiffusion : MonoBehaviour
 			// used in metropolis probability calculation
 			random = new System.Random();
 
-			int time_steps = 50;// specifying time steps per run
+			int time_steps = 10;// specifying time steps per run
 			int diffusion_steps = _diffusion_steps;// storing diffusion_steps locally
+			//Debug.Log("diffusion_steps: " + diffusion_steps);
 			// pre computing potential metropolis probabilities for all possible positive energy_change
 			PreComputeBoltzmannFactors(8);
 			// for each diffusion step

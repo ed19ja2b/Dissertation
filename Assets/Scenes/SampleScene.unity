@@ -219,6 +219,8 @@ GameObject:
   - component: {fileID: 1646054248}
   - component: {fileID: 1646054250}
   - component: {fileID: 1646054251}
+  - component: {fileID: 1646054252}
+  - component: {fileID: 1646054253}
   m_Layer: 0
   m_Name: GridInitialiser
   m_TagString: Untagged
@@ -268,7 +270,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c23ccba5352bc934a91e5e5aa93d7dc1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  temperature: 1
 --- !u!114 &1646054251
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -283,3 +284,27 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   p: 0
   waterCellPrefab: {fileID: 3492976370127973791, guid: ad51278f92a81984c91a2b62396eb09b, type: 3}
+--- !u!114 &1646054252
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1646054247}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fb6c5e5b4cad2bd4dbd45fd14f39d813, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &1646054253
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1646054247}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c5b5ccbe96d63364fb45edb7837cce32, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
