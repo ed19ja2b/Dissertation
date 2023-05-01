@@ -5,36 +5,34 @@ using System.Diagnostics;
 using System.IO;
 using UnityEngine;
 
-
+// attached to the object RunSimulation
 public class SimulationStatistics : MonoBehaviour
 {
 		private int gridSize;
 
 		// writing the statistics to a csv file
-		public void WriteResultsToFile((float, int, float)[][] allInvasionPercolationResults, float[][] allFractionGreenResults, (int, float)[][] allKawasakiDiffusionResults, float[][] allElapsedTimeResults, int num_to_average, int num_parameters){
-			string fileName = "simulation_statistics.csv";
-      using (StreamWriter writer = new StreamWriter(fileName, false))
-      {
-        writer.WriteLine("p,invasion_steps,IP_elapsed_time,fraction_green,diffusion_steps,KD_elapsed_time,total_elapsed_time");
-
-				for(int i = 0; i < num_to_average; i++){
-					(float, int, float)[] invasionPercolationResults = allInvasionPercolationResults[i];
-					(int, float)[] kawasakiDiffusionResults = allKawasakiDiffusionResults[i];
-					float[] elapsed_times = allElapsedTimeResults[i];
-					float[] fraction_green_values = allFractionGreenResults[i];
-
-	        for(int n = 0; n < num_parameters; n++){
-	          (float p, int invasion_steps, float IP_elapsed_time) = invasionPercolationResults[n];
-						p = (float)Math.Round(p, 2);
-	          (int diffusion_steps, float KD_elapsed_time) = kawasakiDiffusionResults[n];
-						float total_elapsed_time = elapsed_times[n];
-						float fraction_green = (float)Math.Round(fraction_green_values[n], 4);
-	          writer.WriteLine($"{p},{invasion_steps},{IP_elapsed_time},{fraction_green},{diffusion_steps},{KD_elapsed_time},{total_elapsed_time}");
-	        }
+		public void WriteResultsToFile((float, int, float) invasionPercolationResults, float fraction_green, (int, float) kawasakiDiffusionResults, float total_elapsed_time, int num_parameters){
+        	string fileName = "simulation_statistics.csv";
+			if(!File.Exists(fileName)){
+				// write header to a new csv file 'true' means append to existing file
+				using (StreamWriter writer = new StreamWriter(fileName, true))
+				{
+					writer.WriteLine("p,invasion_steps,IP_elapsed_time,fraction_green,diffusion_steps,KD_elapsed_time,total_elapsed_time");
+					
 				}
-      }
-      UnityEngine.Debug.Log($"Results written to {fileName}");
+			}
+        using (StreamWriter writer = new StreamWriter(fileName, true))
+        {
+
+			(float p, int invasion_steps, float IP_elapsed_time) = invasionPercolationResults;
+			p = (float)Math.Round(p, 2);
+			(int diffusion_steps, float KD_elapsed_time) = kawasakiDiffusionResults;
+			fraction_green = (float)Math.Round(fraction_green, 4);
+			writer.WriteLine($"{p},{invasion_steps},{IP_elapsed_time},{fraction_green},{diffusion_steps},{KD_elapsed_time},{total_elapsed_time}");
+        }
+        UnityEngine.Debug.Log($"Results appended to {fileName}");
     }
+
 
 		// initialising p values to test in invasion percolation algorithm
 		private float[] InitialisePValues(float p_init, float p_end, int num_parameters){
@@ -62,76 +60,77 @@ public class SimulationStatistics : MonoBehaviour
 					num_sites_total += 1;
 				}
 			}
-			// calculate the fraction of green sites (effectively invaded) out of all sites
-			float fraction_green = (float)num_green / (float)num_sites_total;
+			// calculate the fraction of green sites (effectively invaded) out of all land sites
+			float fraction_green = (float)num_green / ((float)num_sites_total/2f);
 			return fraction_green;
 		}
 
+		private (GameObject[,], float, (float, int, float)) GatherInvasionPercolationStatistics(float p){
+			Stopwatch IP_timer = new Stopwatch();// create and start a timer to measure IP algorithm execution time for this value of parameter p
+			IP_timer.Start();
+
+			(int invasion_steps, GameObject[,] invasion_cells) = GetComponent<RunSimulation>().ExecuteInvasionPercolation(gridSize, p);
+
+			IP_timer.Stop();// stop the timer for the invasion percolation model
+			float IP_elapsed_time = IP_timer.ElapsedMilliseconds / 1000f;// convert time to seconds
+			
+			// calculating and storing statistical data about fraction of effectively invaded sites
+			float fraction_green = CalculateFractionGreen(invasion_cells);
+
+			return (invasion_cells, fraction_green, (p, invasion_steps, IP_elapsed_time));
+		}
+
+		private (GameObject[,], (int, float)) GatherKawasakiDiffusionStatistics(GameObject[,] invasion_cells, int invasion_steps){
+			Stopwatch KD_timer = new Stopwatch();// create timer for measuring kawasaki diffusion model execution time
+			GameObject[,] kawasaki_cells = new GameObject[gridSize, gridSize];
+
+			KD_timer.Start();// start the timer to measure kawasaki diffusion model execution time
+			kawasaki_cells = GetComponent<RunSimulation>().ExecuteKawasakiDiffusion(invasion_cells, gridSize, invasion_steps);
+			KD_timer.Stop();// stop the timer for the kawasaki model
+			float KD_elapsed_time = KD_timer.ElapsedMilliseconds / 1000f;// convert time to seconds
+
+			// get the number of diffusion steps performed by the algorithm
+			int diffusion_steps = GetComponent<RunSimulation>().CalculateDiffusionSteps(invasion_steps);
+			return (kawasaki_cells, (diffusion_steps, KD_elapsed_time));
+		}
+
+		
 		public GameObject[,] GatherStatistics(int _gridSize, float _p_init, float _p_end, int _num_parameters, int num_to_average){
 			gridSize = _gridSize;
 
 			// ****************************************** INITIALISING VARIABLES ******************************************
 			// create array of all p values to iterate over
 			float[] pValues = InitialisePValues(_p_init, _p_end, _num_parameters);
-			// initialise cells array for final state (to output back to RunSimulation.cs)
-			GameObject[,] final_cells_state = new GameObject[gridSize, gridSize];
-			// create arrays of tuple arrays for all measurements taken
-			(float, int, float)[][] allInvasionPercolationResults = new (float, int, float)[num_to_average][];
-			(int, float)[][] allKawasakiDiffusionResults = new (int, float)[num_to_average][];
-			float[][] allElapsedTimeResults = new float[num_to_average][];
-			float[][] allFractionGreenResults = new float[num_to_average][];
-
+			Stopwatch stop_timer = new Stopwatch();
+			stop_timer.Start();
 			// run numerous time to average the results
 			for (int run = 0; run < num_to_average; run++){
 				// ****************************************** INITIALISING VARIABLES ******************************************
-				int counter = 0;// initialising a counter for counting all runs
-				// tuple array storing statistics about each run: (p, invasion_steps, elapsed_time)
-				(float, int, float)[] invasionPercolationResults = new (float, int, float)[_num_parameters];
-				// tuple array storing statistics about kawasaki model for this p: (diffusion_steps, elapsed_time)
-				(int, float)[] kawasakiDiffusionResults = new (int, float)[_num_parameters];
-				// float array storing total elapsed time for each p
-				float[] total_elapsed_times = new float[_num_parameters];
-				// float array storing the fraction of green (effectively invaded) sites left behind by the invading water of the IP algorithm
-				float[] fraction_green_results = new float[_num_parameters];
-
-
+				stop_timer.Stop();
+				if(stop_timer.ElapsedMilliseconds / 1000f > 90){
+					UnityEngine.Debug.Log("Exited GatherStatistics() early - ran for too long");
+					return null;
+				}
+				stop_timer.Start();
 				// run the invasion percolation model for all values of p to be tested
 				foreach(float p in pValues){
 					// ****************************************** INITIALISING VARIABLES ******************************************
-					Stopwatch IP_timer = new Stopwatch();// create and start a timer to measure IP algorithm execution time for this value of parameter p
-					IP_timer.Start();
+					
 					Stopwatch total_timer = new Stopwatch();// create and start a timer to measure entire model's elapsed time
 					total_timer.Start();
-					Stopwatch KD_timer = new Stopwatch();// create timer for measuring kawasaki diffusion model execution time
-
+					
+					
+					int counter = 0;// initialising a counter for counting all runs					
 
 					// ******************************************* INVASION PERCOLATION *******************************************
-					// run the invasion percolation algorithm for this value of p
-					(int invasion_steps, GameObject[,] invasion_cells) = GetComponent<RunSimulation>().ExecuteInvasionPercolation(gridSize, p);
-					IP_timer.Stop();// stop the timer for the invasion percolation model
-					float IP_elapsed_time = IP_timer.ElapsedMilliseconds / 1000f;// convert time to seconds
-
-					// storing statistical data about the IP algorithm for this p
-					invasionPercolationResults[counter] = (p, invasion_steps, IP_elapsed_time);
-					// calculating and storing statistical data about fraction of effectively invaded sites
-					float fraction_green = CalculateFractionGreen(invasion_cells);
-					fraction_green_results[counter] = fraction_green;
-
+					// run the invasion percolation algorithm for this value of p and store results
+					// tuple storing statistics about each run: (p, invasion_steps, elapsed_time)
+					(GameObject[,] invasion_cells, float fraction_green, (float, int, float) invasionPercolationResults) = GatherInvasionPercolationStatistics(p);
+					int invasion_steps = invasionPercolationResults.Item2;
 					// ******************************************** KAWASAKI DIFFUSION ********************************************
 					// run the kawasaki model with the new state of cells after the IP model has terminated
-					GameObject[,] kawasaki_cells = new GameObject[gridSize, gridSize];
-
-					KD_timer.Start();// start the timer to measyre kawasaki diffusion model execution time
-					kawasaki_cells = GetComponent<RunSimulation>().ExecuteKawasakiDiffusion(invasion_cells, gridSize, invasion_steps);
-					KD_timer.Stop();// stop the timer for the kawasaki model
-					float KD_elapsed_time = KD_timer.ElapsedMilliseconds / 1000f;// convert time to seconds
-
-					// get the number of diffusion steps performed by the algorithm
-					int diffusion_steps = GetComponent<RunSimulation>().CalculateDiffusionSteps(invasion_steps);
-
-
-					// storing statistical data about the KD model
-					kawasakiDiffusionResults[counter] = (diffusion_steps, KD_elapsed_time);
+					// tuple storing statistical data about the KD model
+					(GameObject[,] kawasaki_cells, (int, float) kawasakiDiffusionResults) = GatherKawasakiDiffusionStatistics(invasion_cells, invasion_steps);
 
 
 					// ************************************************ FINALIZING ************************************************
@@ -139,24 +138,22 @@ public class SimulationStatistics : MonoBehaviour
 					total_timer.Stop();
 					float total_elapsed_time = total_timer.ElapsedMilliseconds / 1000f;// convert time to seconds
 
-					// storing statistical data about total elapsed execution time for this p
-					total_elapsed_times[counter] = total_elapsed_time;
+					
 
-					// increment counter
-					counter++;
+					// append results to file
+					WriteResultsToFile(invasionPercolationResults, fraction_green, kawasakiDiffusionResults, total_elapsed_time, _num_parameters);
+					GetComponent<RunSimulation>().DestroyCells(kawasaki_cells);
+					GetComponent<RunSimulation>().DestroyCells(invasion_cells);
+
 					// if this is the final iteration, output this state of cells
 					if (run == (num_to_average - 1) && counter == (_num_parameters - 1)){
-						final_cells_state = kawasaki_cells;
+						return kawasaki_cells;
 					}
+					// increment counter
+					counter++;
 				}// end of inner loop (iterating over different p)
-				// ************************************************ FINALIZING ************************************************
-				allInvasionPercolationResults[run] = invasionPercolationResults;
-				allKawasakiDiffusionResults[run] = kawasakiDiffusionResults;
-				allElapsedTimeResults[run] = total_elapsed_times;
-				allFractionGreenResults[run] = fraction_green_results;
+				// ************************************************ FINALIZING ************************************************		
 			}// end of outer loop (averaging results)
-
-			WriteResultsToFile(allInvasionPercolationResults, allFractionGreenResults, allKawasakiDiffusionResults, allElapsedTimeResults, num_to_average, _num_parameters);
-			return final_cells_state;
+			return null;
 		}// end of GatherStatistics()
 }

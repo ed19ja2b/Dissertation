@@ -4,12 +4,12 @@ using System.Linq;
 using UnityEngine;
 
 // Invasion Percolation algorithm described in report (section 3.1.4)
-// attached to the object GridInstantiator
+// attached to the object RunSimulation
 public class InvasionPercolation : MonoBehaviour
 {
 		private System.Random random;// used in generating random probability r
 		private int gridSize;// width 'w' - inputted from RunSimulation.cs
-		public float p;// parameter p adjusting erosion - inputted from RunSimulation.cs
+		private float p;// parameter p adjusting erosion - inputted from RunSimulation.cs
 		public GameObject waterCellPrefab;
 		public GameObject[,] cells;// initially inputted from RunSimulation.cs - returned once algorithm terminates
 
@@ -215,4 +215,16 @@ public class InvasionPercolation : MonoBehaviour
 				// returns to RunSimulation.cs
 				return (invasion_steps, cells);
 		}
+
+		// needed to reset the variables inside this script when running multiple times in gathering data
+		public void Reset(){
+			random = null;
+			gridSize = 0;
+			p = 0f;
+			cells = null;
+			randomField = null;
+			rankedGrowthSites.Clear();
+			numGrowthSites = 0;
+		}
+
 }

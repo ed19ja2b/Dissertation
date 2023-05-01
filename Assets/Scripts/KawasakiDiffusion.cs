@@ -5,23 +5,23 @@ using System;
 using UnityEngine;
 
 // Kawasaki site exchange diffusion model described in report (section 3.1.3)
-// attached to the object GridInstantiator
+// attached to the object RunSimulation
 public class KawasakiDiffusion : MonoBehaviour
 {
     private System.Random random;// used in generating random probability r in metropolis probability calculation
     public GameObject[,] cells;// initially inputted from RunSimulation.cs - returned once model terminates
     private int gridSize;// width 'w' - inputted from RunSimulation.cs
 
-		// specifying constants
+	// specifying constants
     // Boltzmann Constant as defined here - https://www.nist.gov/si-redefinition/meet-constants
     // taken from https://www.codeproject.com/Articles/11647/Special-Function-s-for-C
-		const double BOLTZMANN = 1.380649e-23;
-		// temperature of system - used in metropolis probability
-		// mostly arbitrary choice, although was adjusted to modify diffusion rates to match Hawick's results
-		// (figure 2 https://www.researchgate.net/publication/287274420_Modelling_Flood_Incursion_and_Coastal_Erosion_using_Cellular_Automata_Simulations)
+	const double BOLTZMANN = 1.380649e-23;
+	// temperature of system - used in metropolis probability
+	// mostly arbitrary choice, although was adjusted to modify diffusion rates to match Hawick's results
+	// (figure 2 https://www.researchgate.net/publication/287274420_Modelling_Flood_Incursion_and_Coastal_Erosion_using_Cellular_Automata_Simulations)
     private const float temperature = 14.0f;
-		private const float tau = 0.574f;// scaling parameter for metropolis probability calculation
-		// relative positions of north, east, south, west neighbours given some coordinate
+	private const float tau = 0.574f;// scaling parameter for metropolis probability calculation
+	// relative positions of north, east, south, west neighbours given some coordinate
     private int[,] neighbour_positions = { { 0, 1 }, { 1, 0 }, { 0, -1 }, { -1, 0 } };
 
 		// returns true if the position is within the boundaries of the grid
@@ -68,16 +68,16 @@ public class KawasakiDiffusion : MonoBehaviour
 			// for all 4 possible neighbours
 			for (int i = 0; i < 4; i++)
 			{
-					int n_x = x + neighbour_positions[i, 0];
-					int n_y = y + neighbour_positions[i, 1];
-					// if the neighbour is within the boundaries of the grid
-					if (IsValidPosition(n_x, n_y) == true)
-					{
-							neighbours[i] = cells[n_x, n_y];
-					}	else// otherwise, there is no neighbour here and so we set this to null
-					{
-							neighbours[i] = null;
-					}
+				int n_x = x + neighbour_positions[i, 0];
+				int n_y = y + neighbour_positions[i, 1];
+				// if the neighbour is within the boundaries of the grid
+				if (IsValidPosition(n_x, n_y) == true)
+				{
+						neighbours[i] = cells[n_x, n_y];
+				}	else// otherwise, there is no neighbour here and so we set this to null
+				{
+						neighbours[i] = null;
+				}
 			}
 			return neighbours;
 		}
@@ -128,11 +128,11 @@ public class KawasakiDiffusion : MonoBehaviour
 		private Dictionary<double, double> boltzmannFactors;
 		private void PreComputeBoltzmannFactors(int maxEnergyChange)
 		{
-				boltzmannFactors = new Dictionary<double, double>();
-				for (int i = 0; i <= maxEnergyChange; i++)
-				{
-						boltzmannFactors[i] = Math.Exp(-i / (BOLTZMANN * temperature));
-				}
+			boltzmannFactors = new Dictionary<double, double>();
+			for (int i = 0; i <= maxEnergyChange; i++)
+			{
+					boltzmannFactors[i] = Math.Exp(-i / (BOLTZMANN * temperature));
+			}
 		}
 
 		// compute the Metropolis probability given an energy_change
@@ -157,58 +157,64 @@ public class KawasakiDiffusion : MonoBehaviour
 		// one single iteration of the kawasaki site exchange model
     private void PerformSingleIteration(){
 
-			// works by ordering all potential (x, y) coordinates in random order, placing these inside 'pos' and retrieving x and y from 'pos'
-			// https://stackoverflow.com/questions/29601965/random-numbers-in-specific-range-c-sharp
-			// iterate over cells in random order - never iterates over the same position twice
-			foreach (var pos in Enumerable.Range(0, gridSize).OrderBy(x => random.Next()).Zip(Enumerable.Range(0, gridSize).OrderBy(x => random.Next()), (x, y) => new { x, y }))
-			{
-				// get the cell at this random position
-				GameObject cell = cells[(int)pos.x, (int)pos.y];
-				GameObject neighbourCell = ChooseRandomNeighbour(cell);// choose a random neighbour of the cell (stochastic mechanism)
-				// we don't swap cells of the same type, since there is no change in energy if we swap them
-				if(IsWater(cell) != IsWater(neighbourCell)){// if the cells are of different types
-					// finding energy change
-					float init_energy = CalculateHamiltonian(cell) + CalculateHamiltonian(neighbourCell);// initial energy in current configuration
-					GameObject[] swappedCells = SwapCells(cell, neighbourCell);// swap cells
-					float new_energy = CalculateHamiltonian(swappedCells[0]) + CalculateHamiltonian(swappedCells[1]);// energy in new configuration
-					float energy_change = new_energy - init_energy;// difference in energy between proposed and original configurations
+		// works by ordering all potential (x, y) coordinates in random order, placing these inside 'pos' and retrieving x and y from 'pos'
+		// https://stackoverflow.com/questions/29601965/random-numbers-in-specific-range-c-sharp
+		// iterate over cells in random order - never iterates over the same position twice
+		foreach (var pos in Enumerable.Range(0, gridSize).OrderBy(x => random.Next()).Zip(Enumerable.Range(0, gridSize).OrderBy(x => random.Next()), (x, y) => new { x, y }))
+		{
+			// get the cell at this random position
+			GameObject cell = cells[(int)pos.x, (int)pos.y];
+			GameObject neighbourCell = ChooseRandomNeighbour(cell);// choose a random neighbour of the cell (stochastic mechanism)
+			// we don't swap cells of the same type, since there is no change in energy if we swap them
+			if(IsWater(cell) != IsWater(neighbourCell)){// if the cells are of different types
+				// finding energy change
+				float init_energy = CalculateHamiltonian(cell) + CalculateHamiltonian(neighbourCell);// initial energy in current configuration
+				GameObject[] swappedCells = SwapCells(cell, neighbourCell);// swap cells
+				float new_energy = CalculateHamiltonian(swappedCells[0]) + CalculateHamiltonian(swappedCells[1]);// energy in new configuration
+				float energy_change = new_energy - init_energy;// difference in energy between proposed and original configurations
 
-					// we accept the change if the energy change is negative, i.e., we don't satisfy this condition (and therefore don't continue)
-					if(energy_change >= 0){// if energy change is greater than or equal to zero
-						float p = ComputeMetropolisProbability(energy_change);
-						float r = (float)random.NextDouble();
-						// we accept if r < p, so we reject if r >= p (and swap the cells back)
-						if(r >= p){
-							swappedCells = SwapCells(swappedCells[0], swappedCells[1]);
-						}
+				// we accept the change if the energy change is negative, i.e., we don't satisfy this condition (and therefore don't continue)
+				if(energy_change >= 0){// if energy change is greater than or equal to zero
+					float p = ComputeMetropolisProbability(energy_change);
+					float r = (float)random.NextDouble();
+					// we accept if r < p, so we reject if r >= p (and swap the cells back)
+					if(r >= p){
+						swappedCells = SwapCells(swappedCells[0], swappedCells[1]);
 					}
 				}
 			}
+		}
 		}
 
 		// runs the kawasaki diffusion model - called from RunSimulation.cs
 		// algorithm 2.2 in the report
     public GameObject[,] RunKawasakiDiffusion(int _gridSize, GameObject[,] _cells, int _diffusion_steps)
     {
-      gridSize = _gridSize;// store gridSize locally - inputted from RunSimulation.cs
-			cells = _cells;// store cells locally - inputted from RunSimulation.cs
-			// used in metropolis probability calculation
-			random = new System.Random();
+      	gridSize = _gridSize;// store gridSize locally - inputted from RunSimulation.cs
+		cells = _cells;// store cells locally - inputted from RunSimulation.cs
+		// used in metropolis probability calculation
+		random = new System.Random();
 
-			int time_steps = 10;// specifying time steps per run
-			int diffusion_steps = _diffusion_steps;// storing diffusion_steps locally
-			//Debug.Log("diffusion_steps: " + diffusion_steps);
-			// pre computing potential metropolis probabilities for all possible positive energy_change
-			PreComputeBoltzmannFactors(8);
-			// for each diffusion step
-			for(int ds = 0; ds < diffusion_steps; ds++){
-				// for each time step
-				for(int t = 0; t < time_steps; t++){
-					// perform one iteration of the model
-					PerformSingleIteration();
-				}
+		int time_steps = 10;// specifying time steps per run
+		int diffusion_steps = _diffusion_steps;// storing diffusion_steps locally
+		//Debug.Log("diffusion_steps: " + diffusion_steps);
+		// pre computing potential metropolis probabilities for all possible positive energy_change
+		PreComputeBoltzmannFactors(8);
+		// for each diffusion step
+		for(int ds = 0; ds < diffusion_steps; ds++){
+			// for each time step
+			for(int t = 0; t < time_steps; t++){
+				// perform one iteration of the model
+				PerformSingleIteration();
 			}
-			// returns to RunSimulation.cs
-			return cells;
+		}
+		// returns to RunSimulation.cs
+		return cells;
     }
+
+	public void Reset(){
+		random = null;
+		gridSize = 0;
+		cells = null;
 	}
+}

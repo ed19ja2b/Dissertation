@@ -5,7 +5,7 @@ using System;
 using UnityEngine;
 
 // Site Instantiation Process described in report (algorithm 2.1)
-// attached to the object GridInstantiator
+// attached to the object RunSimulation
 public class InstantiateGridCells : MonoBehaviour
 {
 	public int gridSize;// width 'w' as discussed in report
