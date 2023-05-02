@@ -125,13 +125,20 @@ public class KawasakiDiffusion : MonoBehaviour
 			return swappedCells;
 		}
 
-		private Dictionary<double, double> boltzmannFactors;
+		// pre-calculating possible metropolis probabilities (coined boltzmannFactors) for all possible energy changes
+		private double[] boltzmannFactors;// creating an array for the factors
 		private void PreComputeBoltzmannFactors(int maxEnergyChange)
 		{
-			boltzmannFactors = new Dictionary<double, double>();
+			boltzmannFactors = new double[maxEnergyChange + 1];
 			for (int i = 0; i <= maxEnergyChange; i++)
 			{
-					boltzmannFactors[i] = Math.Exp(-i / (BOLTZMANN * temperature));
+				// doubles used for precision in the calculation - unnecessary otherwise (floats suffice)
+				double logFactor;// exponent inside the probability calculation
+				double scaling_factor = 1e+23;// normalise denominator to not get incredibly large exponents when dividing by the boltzmann constant
+				// calculate exponent to be raised to e - based on Hawick's equation 9 - https://www.researchgate.net/publication/287274420_Modelling_Flood_Incursion_and_Coastal_Erosion_using_Cellular_Automata_Simulations
+				logFactor = -i / (temperature * BOLTZMANN * scaling_factor);
+				// scale the probability by tau and store this inside the dictionary at the index of the energy change
+				boltzmannFactors[i] = tau * Math.Exp(logFactor);
 			}
 		}
 
@@ -143,14 +150,8 @@ public class KawasakiDiffusion : MonoBehaviour
 		    {
 		        return 1.0f;
 		    }
-				// doubles used for precision in the calculation - unnecessary otherwise (floats suffice)
-		    double logFactor;// exponent inside the probability calculation
-				double scaling_factor = 1e+23;// normalise denominator to not get incredibly large exponents when dividing by the boltzmann constant
-				// calculate exponent to be raised to e - based on Hawick's equation 9 - https://www.researchgate.net/publication/287274420_Modelling_Flood_Incursion_and_Coastal_Erosion_using_Cellular_Automata_Simulations
-		    logFactor = -energy_change / (temperature * BOLTZMANN * scaling_factor);
-				// scale the probability by the tau
-		    double p = tau * Math.Exp(logFactor);
-		    return (float)p;
+			float p = (float)boltzmannFactors[(int)Math.Round(energy_change)];// get the boltzmann factor for this energy change
+		    return p;
 		}
 
 

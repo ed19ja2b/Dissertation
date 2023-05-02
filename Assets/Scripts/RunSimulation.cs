@@ -11,6 +11,10 @@ public class RunSimulation : MonoBehaviour
 		public float p = 0.5f;// global - parameter p - adjust to modify erosion patterns
 		// adjusts camera so that we can view the whole simulation
 		public bool run_statistics = false;// set to true if measuring statistics of the model
+		public int num_to_average = 1;// how many times we gather statistics for all the p we are testing so that we can average the results
+		public int num_to_test = 9;// number of p parameters to test
+		public float p_init = 0.1f;// initial p parameter to test
+		public float p_final = 0.9f;// final p parameter to test
 		void AdjustCamera(int _gridSize){
 			int orthographicSize = (_gridSize)/2;
 			float offset = 0.5f;
@@ -65,11 +69,10 @@ public class RunSimulation : MonoBehaviour
 			//adjust camera to view the whole grid
 			AdjustCamera(gridSize);
 
-			
+			// if we want to gather statistics
 			if(run_statistics){
-				int num_to_average = 1;// how many times we gather statistics for all the p we are testing so that we can average the results
 				// measure statistics of IP algorithm for different p with: width, initial p, final p, num parameters to test, and how many times we test them
-				cells = GetComponent<SimulationStatistics>().GatherStatistics(gridSize, 0.05f, 0.90f, 10, num_to_average);
+				cells = GetComponent<SimulationStatistics>().GatherStatistics(gridSize, p_init, p_final, num_to_test, num_to_average);
 			} else{// otherwise we run the model normally
 				int invasion_steps = 0;// initialise invasion_steps to 0
 				// get invasion_steps and cells after executing invasion percolation

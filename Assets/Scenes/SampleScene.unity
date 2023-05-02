@@ -282,7 +282,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 81c76a2bdff55684a91d524f2c445926, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  p: 0
   waterCellPrefab: {fileID: 3492976370127973791, guid: ad51278f92a81984c91a2b62396eb09b, type: 3}
 --- !u!114 &1646054252
 MonoBehaviour:
@@ -308,3 +307,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c5b5ccbe96d63364fb45edb7837cce32, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  p: -0.42
+  run_statistics: 0
+  num_to_average: 1
+  num_to_test: 9
+  p_init: 0.1
+  p_final: 0.9
